@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import AppointmentCard from '../components/AppointmentCard.jsx'
 
 const initialForm = {
@@ -18,6 +18,25 @@ function BookingPage() {
   // Additional states for API integration
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+
+  // Doctor list state
+  const [doctors, setDoctors] = useState([])
+
+  // Fetch doctors list on component mount
+  useEffect(() => {
+    async function fetchDoctors() {
+      try {
+        const response = await fetch('/api/v1/doctors')
+        if (response.ok) {
+          const json = await response.json()
+          setDoctors(Array.isArray(json) ? json : json.data ?? [])
+        }
+      } catch (err) {
+        console.error('Error fetching doctors:', err)
+      }
+    }
+    fetchDoctors()
+  }, [])
 
   function handleChange(event) {
     const { name, value } = event.target
@@ -84,15 +103,20 @@ function BookingPage() {
 
           <div className="form-field">
             <label htmlFor="doctorName">Doctor name</label>
-            <input
+            <select
               id="doctorName"
               name="doctorName"
-              type="text"
               value={formData.doctorName}
               onChange={handleChange}
-              placeholder="e.g. Dr. Anjali Shah"
               required
-            />
+            >
+              <option value="">Select a doctor</option>
+              {doctors.map((doc) => (
+                <option key={doc._id || doc.id || doc.name} value={doc.name}>
+                  {doc.name} ({doc.specialisation})
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="form-row">

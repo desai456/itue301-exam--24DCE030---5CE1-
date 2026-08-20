@@ -1,37 +1,32 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AppointmentCard from '../components/AppointmentCard.jsx'
 
-// Sample data passed down as props to demonstrate the parent -> child
-// prop flow required by Task 1. DoctorsPage instead sources real data
-// from the API (Task 4).
-const sampleAppointments = [
-  {
-    id: 1,
-    patientName: 'Ravi Mehta',
-    doctorName: 'Dr. Anjali Shah',
-    date: '2026-08-22',
-    timeSlot: '10:30 AM',
-    status: 'confirmed',
-  },
-  {
-    id: 2,
-    patientName: 'Priya Nair',
-    doctorName: 'Dr. Karan Patel',
-    date: '2026-08-22',
-    timeSlot: '02:00 PM',
-    status: 'pending',
-  },
-  {
-    id: 3,
-    patientName: 'Suresh Iyer',
-    doctorName: 'Dr. Meera Joshi',
-    date: '2026-08-23',
-    timeSlot: '09:15 AM',
-    status: 'cancelled',
-  },
-]
-
 function HomePage() {
+  const [appointments, setAppointments] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    async function fetchAppointments() {
+      setLoading(true)
+      setError(null)
+      try {
+        const response = await fetch('/api/v1/appointments')
+        if (!response.ok) {
+          throw new Error(`Failed to fetch appointments: status ${response.status}`)
+        }
+        const json = await response.json()
+        setAppointments(Array.isArray(json) ? json : json.data ?? [])
+      } catch (err) {
+        setError(err.message || 'Could not load appointments right now.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchAppointments()
+  }, [])
+
   return (
     <div>
       <section className="hero">
@@ -93,19 +88,33 @@ function HomePage() {
 
       <div className="section-head">
         <h2>Recent appointments</h2>
-        <span className="section-count">{sampleAppointments.length} entries</span>
+        <span className="section-count">{appointments.length} entries</span>
       </div>
 
-      {sampleAppointments.map((appt) => (
-        <AppointmentCard
-          key={appt.id}
-          patientName={appt.patientName}
-          doctorName={appt.doctorName}
-          date={appt.date}
-          timeSlot={appt.timeSlot}
-          status={appt.status}
-        />
-      ))}
+      {loading && <p className="state-note">Loading recent appointments…</p>}
+
+      {!loading && error && (
+        <p className="state-note error">
+          Couldn't reach the appointments API: {error}
+        </p>
+      )}
+
+      {!loading && !error && appointments.length === 0 && (
+        <p className="state-note">No appointments on record yet.</p>
+      )}
+
+      {!loading && !error && appointments.length > 0 &&
+        [...appointments].reverse().map((appt) => (
+          <AppointmentCard
+            key={appt._id || appt.id}
+            patientName={appt.patientId?.name || 'Unknown Patient'}
+            doctorName={appt.doctorId?.name || 'Unknown Doctor'}
+            date={appt.date}
+            timeSlot={appt.timeSlot}
+            status={appt.status}
+          />
+        ))
+      }
     </div>
   )
 }

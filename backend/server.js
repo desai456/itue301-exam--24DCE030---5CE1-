@@ -8,7 +8,7 @@ const Patient = require('./models/Patient');
 const Appointment = require('./models/Appointment');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5005;
 
 // Enable CORS so the React app can call it
 app.use(cors());

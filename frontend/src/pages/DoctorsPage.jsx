@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 
 // Base URL for the Express API built in Task 3. Vite's dev-server proxy
-// (see vite.config.js) forwards "/api" to http://localhost:5000, so this
+// (see vite.config.js) forwards "/api" to http://localhost:5005, so this
 // works unchanged in development and can be swapped for an env var in
 // production if needed.
 const API_BASE = '/api/v1'
@@ -60,7 +60,7 @@ function DoctorsPage() {
       {!loading && error && (
         <p className="state-note error">
           Couldn't reach the doctors API: {error}. Make sure the Express
-          backend is running on port 5000.
+          backend is running on port 5005.
         </p>
       )}
 
